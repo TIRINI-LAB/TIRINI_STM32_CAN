@@ -15,13 +15,6 @@ IMPORTANT NOTE! To use this library, CAN module needs to be enabled in HAL drive
 to add -DHAL_CAN_MODULE_ENABLED as build flag. With Arduino IDE it's easiest to create hal_conf_extra.h -file
 to same folder with sketch and haven #define HAL_CAN_MODULE_ENABLED there. See examples for this.
 */
-//"STM32_CAN.h file
-
-/*
-IMPORTANT NOTE! To use this library, CAN module needs to be enabled in HAL drivers. If PIO is used, it's enough
-to add -DHAL_CAN_MODULE_ENABLED as build flag. With Arduino IDE it's easiest to create hal_conf_extra.h -file
-to same folder with sketch and haven #define HAL_CAN_MODULE_ENABLED there. See examples for this.
-*/
 
 #ifndef STM32_CAN_H
 #define STM32_CAN_H
