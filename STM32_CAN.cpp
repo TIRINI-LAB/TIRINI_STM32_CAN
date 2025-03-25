@@ -1,5 +1,6 @@
-#include "STM32_CAN.h"
+// STM32_CAN.cpp file
 
+#include "STM32_CAN.h"
 #include "core_debug.h"
 
 #if defined(HAL_CEC_MODULE_ENABLED) && defined(STM32_CAN1_SHARED_WITH_CEC)
@@ -8,6 +9,7 @@
  * Application have to declare them properly to be able to call
  * the HAL_CEC_IRQHandler().
  */
+ 
 extern CEC_HandleTypeDef * phcec;
 #endif
 
@@ -127,12 +129,18 @@ STM32_CAN::STM32_CAN(uint32_t rx, uint32_t tx, RXQUEUE_TABLE rxSize, TXQUEUE_TAB
   init();
 }
 
+
+
+////   modifed this
 STM32_CAN::STM32_CAN(PinName rx, PinName tx, RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize)
-  : rx(rx), tx(tx), sizeRxBuffer(rxSize), sizeTxBuffer(txSize),
+  : sizeRxBuffer(rxSize), sizeTxBuffer(txSize), rx(rx), tx(tx),
     preemptPriority(MAX_IRQ_PRIO_VALUE), subPriority(0)
 {
   init();
 }
+////   modifed this
+
+
 
 STM32_CAN::STM32_CAN( CAN_TypeDef* canPort, RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize )
   : sizeRxBuffer(rxSize), sizeTxBuffer(txSize),
@@ -144,10 +152,17 @@ STM32_CAN::STM32_CAN( CAN_TypeDef* canPort, RXQUEUE_TABLE rxSize, TXQUEUE_TABLE 
   init();
 }
 
+
+
+
+
 //legacy pin config for compatibility
-STM32_CAN::STM32_CAN( CAN_TypeDef* canPort, CAN_PINS pins, RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize )
-  : rx(NC), tx(NC), sizeRxBuffer(rxSize), sizeTxBuffer(txSize),
+//////   modifed this
+STM32_CAN::STM32_CAN(CAN_TypeDef* canPort, CAN_PINS pins, RXQUEUE_TABLE rxSize, TXQUEUE_TABLE txSize)
+  : sizeRxBuffer(rxSize), sizeTxBuffer(txSize), rx(NC), tx(NC),
     preemptPriority(MAX_IRQ_PRIO_VALUE), subPriority(0)
+//////   modifed this
+
 {
   if (canPort == CAN1)
   {
@@ -161,12 +176,7 @@ STM32_CAN::STM32_CAN( CAN_TypeDef* canPort, CAN_PINS pins, RXQUEUE_TABLE rxSize,
         rx = PB_8;
         tx = PB_9;
         break;
-      #if defined(__HAL_RCC_GPIOD_CLK_ENABLE)
-      case ALT_2:
-        rx = PD_0;
-        tx = PD_1;
-        break;
-      #endif
+        /// removed ALT_2 here...
     }
   }
 #ifdef CAN2
@@ -1124,18 +1134,21 @@ bool STM32_CAN::calculateBaudrate(int baud)
    *
    * for more details + justification, see: https://github.com/pazi88/STM32_CAN/pull/41
    */
+
+   uint32_t baud_u = static_cast<uint32_t>(baud);
+
   for (prescaler = 1; prescaler <= 1024; prescaler += 1) {
     const uint32_t can_freq = frequency / prescaler;
     const uint32_t baud_min = can_freq / (1 + 5 + 16);
 
     /* skip all prescaler values that can't possibly achieve the desired baudrate */
-    if (baud_min > baud) continue;
+    if (baud_min > baud_u) continue;
 
     for (bs2 = 1; bs2 <= 5; bs2 += 1) {
       for (bs1 = (bs2 * 3) - 1; bs1 <= 16; bs1 += 1) {
         const uint32_t baud_cur = can_freq / (1 + bs1 + bs2);
 
-        if (baud_cur != baud) continue;
+        if (baud_cur != baud_u) continue;
 
         setBaudRateValues(prescaler, bs1, bs2, 4);
         return true;
